@@ -2,7 +2,12 @@
 """
 This code recreates the game ball lines
 This game can be found, e.g., here: http://www.sheppardsoftware.com/braingames/balllines/balllinesAS2.htm
-Note that if n (the size of the GAMEBOARD) is >=10, then parts of the game might break. (fix this by finding instances of "int(ball_to_move_input[0])" and "int(ball_to_move_input[2])" adjust appropriately)
+Note that if n (the size of the GAMEBOARD) is >=10, then parts of the game might break. (fix this by finding instances of "int(BALL_TO_MOVE_INPUT[0])" and "int(BALL_TO_MOVE_INPUT[2])" adjust appropriately)
+(one minor oddity: in the scenario where an incoming ball is going to arrive in the spot which would complete a 5-in-a-row...
+... but the incoming ball is of a different colour from the others in the 5-in-a-row....
+... and then the user completes the 5-in-a-row by moving a ball...
+... then the eliminate_long_rows function will also delete out the incoming ball...
+... whereas the original version on the website will leave the incoming ball there.)
 """
 
 
@@ -17,8 +22,9 @@ for i in range(n):
 
 
 NO_OF_COLOURS = 4
-NO_OF_INCOMING_BALLS = 3
+NO_OF_INCOMING_BALLS = 5
 TARGET_ROW_LENGTH = 5
+SCORE = 0
 
 def initialise_gameboard():
     """
@@ -52,8 +58,9 @@ for i in range(0,n):
 
 
 
+NO_OF_TURNS = 0
 
-while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens inside this while loop -- i.e. it ends when you run out of space on the board
+while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens inside this while loop -- i.e. it ends when you run out of space on the board
 
 
     # I'm now hardcoding the GAMEBOARD (and overwriting the randomly assigned stuff from earlier) for debugging/testing purposes
@@ -87,7 +94,10 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
 ##        INCOMING_BALLS = [[2,2],[5,0],[1,4]]
     #end of show_incoming_balls function
 
-    show_incoming_balls()
+    if NO_OF_TURNS == 0:             # variable initialisation only needed the first time round (thereafter the value is set towards the end of the while loop)
+        NO_OF_ROWS_ELIMINATED = 0    # need to set this to zero at the start so that the next if statement can call the show_incoming_balls function
+    if NO_OF_ROWS_ELIMINATED == 0:
+        show_incoming_balls() # calling the function
 
 
 
@@ -96,38 +106,61 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
         while i < n:
             print(GAMEBOARD[i])
             i += 1
+        print("Score:"+str(SCORE))
+
 
     print("Here's the gameboard:")
     print_nicely()
 
 
-
-    # next we ask the user which ball they are going to move
-    ball_to_move_input = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left, count downwards to get your x value, and count to the right for y): ")    
-    colour_of_ball_being_moved = GAMEBOARD[int(ball_to_move_input[0])][int(ball_to_move_input[2])] # note the colour of the ball moved
-    print("The colour you've selected is "+ str(colour_of_ball_being_moved))
-    while colour_of_ball_being_moved.real == 0:                 # this while loop checks that the user has made sensible choices
-        if colour_of_ball_being_moved == 0:                     # if the user has selected a cell where is actually no ball to move
-            print("Sorry -- you've selected an empty cell!")    # then inform the user
-            ball_to_move_input = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left): ")    # ask the user to choose a different cell
-            colour_of_ball_being_moved = GAMEBOARD[int(ball_to_move_input[0])][int(ball_to_move_input[2])] # note the colour of the ball moved
-            print("The colour you've selected is "+ str(colour_of_ball_being_moved))
-        elif colour_of_ball_being_moved.imag > 0:               # if the user has selected a cell where there is an incoming ball which hasn't arrived yet
-            print("Sorry -- this cell contains a ball which hasn't actually arrived on the board yet, so you can't move it")   # then inform the user
-            ball_to_move_input = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left): ")    # ask the user to choose a different cell
-            colour_of_ball_being_moved = GAMEBOARD[int(ball_to_move_input[0])][int(ball_to_move_input[2])] # note the colour of the ball moved
-            print("The colour you've selected is "+ str(colour_of_ball_being_moved))
-    #end of while loop        
-
-    ball_destination = input("Give the x,y co-ordinates of the ball's destination, separated by a comma: ")
+    # just initialising/"declaring" a few global variables which are about to used in the ask for ball to move and destination function
+    BALL_TO_MOVE_INPUT = ""
+    COLOUR_OF_BALL_BEING_MOVED = 0
+    BALL_DESTINATION = ""
+    
+    def ask_for_ball_to_move_and_destination():
+        """
+        # this function asks the user which ball they want to move and where the ball should go
+        # it also includes various checks on the sensibleness of what the user has inputted
+        """
+        # TO DO: need to add in verification that someone hasn't entered numbers that are outside of the GAMEBOARD
+        # TO DO: need to add in verification that the co ordinates entered are for empty cell (for ball destination)
 
 
-    # TO DO: need to add in verification that someone hasn't entered numbers that are outside of the GAMEBOARD
-    # TO DO: need to add in verification that the co ordinates entered are for empty cell (for ball destination)
+        #NOTE -- IMPORTANT ASSUMPTION I've assumed that n doesn't get any larger than 10 -- if n>10, the above code breaks, shouldn't be hard to fix it so that doesn't happen, because it's just the simple fact that I'm assuming it's one digit long
 
 
-    #NOTE -- IMPORTANT ASSUMPTION I've assumed that n doesn't get any larger than 10 -- if n>10, the above code breaks, shouldn't be hard to fix it so that doesn't happen, because it's just the simple fact that I'm assuming it's one digit long
 
+        BALL_TO_MOVE_INPUT = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left, count downwards to get your x value, and count to the right for y): ")    
+        COLOUR_OF_BALL_BEING_MOVED = GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] # note the colour of the ball moved
+        print("The colour you've selected is "+ str(COLOUR_OF_BALL_BEING_MOVED))
+        while COLOUR_OF_BALL_BEING_MOVED.real == 0:                 # this while loop checks that the user has made sensible choices
+            if COLOUR_OF_BALL_BEING_MOVED == 0:                     # if the user has selected a cell where is actually no ball to move
+                print("Sorry!!! -- you've selected an empty cell!")    # then inform the user
+                BALL_TO_MOVE_INPUT = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left): ")    # ask the user to choose a different cell
+                COLOUR_OF_BALL_BEING_MOVED = GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] # note the colour of the ball moved
+                print("The colour you've selected is "+ str(COLOUR_OF_BALL_BEING_MOVED))
+            elif COLOUR_OF_BALL_BEING_MOVED.imag > 0:               # if the user has selected a cell where there is an incoming ball which hasn't arrived yet
+                print("Sorry!!! -- this cell contains a ball which hasn't actually arrived on the board yet, so you can't move it")   # then inform the user
+                BALL_TO_MOVE_INPUT = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left): ")    # ask the user to choose a different cell
+                COLOUR_OF_BALL_BEING_MOVED = GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] # note the colour of the ball moved
+                print("The colour you've selected is "+ str(COLOUR_OF_BALL_BEING_MOVED))
+        #end of while loop        
+
+        BALL_DESTINATION = input("Give the x,y co-ordinates of the ball's destination, separated by a comma: ")
+
+
+        return [BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION]
+
+    # end of ask for ball to move and destination function
+
+    
+    TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
+    TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    
+    BALL_TO_MOVE_INPUT = TEMP[0]
+    COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
+    BALL_DESTINATION = TEMP[2]
 
     def flood_fill(initial_x, initial_y, destination_x, destination_y):
 
@@ -190,19 +223,19 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
 
 
 
-    CAN_MOVE = flood_fill(int(ball_to_move_input[0]),int(ball_to_move_input[2]), int(ball_destination[0]), int(ball_destination[2]))
+    CAN_MOVE = flood_fill(int(BALL_TO_MOVE_INPUT[0]),int(BALL_TO_MOVE_INPUT[2]), int(BALL_DESTINATION[0]), int(BALL_DESTINATION[2])) # this line checks hwether there is a path from the ball to move to the destination. it uses the flood fill method to do this
 
     while CAN_MOVE == False:
-        print("Sorry, there is no path between the ball you want to move and that destination")
-        ball_destination = input("Give the x,y co-ordinates of the ball's destination, separated by a comma (or type 'new ball' if you want to choose a different ball to move): ")
-        if ball_destination.lower() == "new ball":
-            ball_to_move_input = input("Give the x,y co-ordinates of the ball you are going to move, separated by a comma ((0,0) is top left): ")    
-            colour_of_ball_being_moved = GAMEBOARD[int(ball_to_move_input[0])][int(ball_to_move_input[2])] # note the colour of the ball moved
-            print("The colour you've selected is "+ str(colour_of_ball_being_moved))
-            if colour_of_ball_being_moved == 0:
-                print("Warning -- you've selected an empty cell!")
-            ball_destination = input("Give the x,y co-ordinates of the ball's destination, separated by a comma: ")    
-        CAN_MOVE = flood_fill(int(ball_to_move_input[0]),int(ball_to_move_input[2]), int(ball_destination[0]), int(ball_destination[2]))
+        print("Sorry!!! There is no path between the ball you want to move and that destination")
+        BALL_DESTINATION = input("Give the x,y co-ordinates of the ball's destination, separated by a comma (or type 'new ball' if you want to choose a different ball to move): ")
+        if BALL_DESTINATION.lower() == "new ball":
+            TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
+            TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    
+            BALL_TO_MOVE_INPUT = TEMP[0]
+            COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
+            BALL_DESTINATION = TEMP[2]
+        CAN_MOVE = flood_fill(int(BALL_TO_MOVE_INPUT[0]),int(BALL_TO_MOVE_INPUT[2]), int(BALL_DESTINATION[0]), int(BALL_DESTINATION[2]))
 
 
     def make_incoming_balls_arrive():
@@ -229,13 +262,12 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
 
 
     if CAN_MOVE:
-        GAMEBOARD[int(ball_to_move_input[0])][int(ball_to_move_input[2])] = 0 # "lift" the ball off that cell of the GAMEBOARD by setting its value to zero
-        GAMEBOARD[int(ball_destination[0])][int(ball_destination[2])] = colour_of_ball_being_moved # "place" the ball in its rightful place
+        GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] = 0 # "lift" the ball off that cell of the GAMEBOARD by setting its value to zero
+        GAMEBOARD[int(BALL_DESTINATION[0])][int(BALL_DESTINATION[2])] = COLOUR_OF_BALL_BEING_MOVED # "place" the ball in its rightful place
         # need to tweak this (her's some pseudocode)
         # if long rows eliminated, then go back and give the user the option to move another ball
         # else go on to the make_incoming_Balls_arrive step
         
-        make_incoming_balls_arrive()
     else:
         print("This message should never be seen. If you're seeing this, something funny is happening with the logic around the CAN_MOVE variable, so try to debug that.")
 
@@ -284,21 +316,16 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
         Runs through all possible 5-in-a-row combinations (I say 5 -- could be any number)
         Stores a list of those which contain balls all of the same colour
         Goes through the list and sets those to zero (empty)
-        
-        NOTE -- THIS IS CURRENTLY WRONG!
-        Wrong because it should accommodate a 6-in-a-row or a 7-in-a-row (etc)
-        Also there are some edge cases not working...
-        ... e.g. horizontal 5-in-a-row not working if it's right over to the RHS
-        FIRST STEP: fix this so edge cases work properly -- DONE
-        SECOND STEP: stick a for loop around each existing loop so it checks 9 in a row, then... then 5 DONE
-        THIRD STEP: once a 5-in-a-row has disappeared, user should get another move (not sure how to do this)
-
+        This is also where the SCORE is updated
         """
+    
+        global SCORE
 
         # each "long row" (i.e. row of the target length, e.g. each 5-in-a-row) is stored...
-        # ... as a 2-tuple where the first element is the "first" position on the gameboard...
+        # ... as a 3-tuple where the first element is the "first" position on the gameboard...
         # ... and the second element is a text string indicating the direction, i.e. "h", "v", "dtlbr", "dbltr"...
-        # ... for horizontal, vertical, diagonal top left to bottom right, and diagonal bottom left to top right
+        # ... for horizontal, vertical, diagonal top left to bottom right, and diagonal bottom left to top right...
+        # ... and the third element indicates the length of the row (is it a 5-in-a-row, or a 6-in-a-row, whatever)
         list_of_long_rows = []          
         global TARGET_ROW_LENGTH
         length_to_eliminate = n # length_to_eliminate tracks what length of row we are eliminating -- so we'll start off by eliminating n-in-a-row (ie 9-in-a-row) and then work our way down
@@ -318,7 +345,7 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
                         else:
                             break                    # otherwise stop
                     if k == length_to_eliminate - 1:   # i.e. if the previous while loop got all the way through to the target row length    
-                        list_of_long_rows.append([[i,j],"h"])        
+                        list_of_long_rows.append([[i,j],"h",length_to_eliminate])        
         
             # find all the VERTICAL target length rows
             for j in range(0,n):
@@ -330,7 +357,7 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
                         else:
                             break                    # otherwise stop
                     if k == length_to_eliminate - 1:   # i.e. if the previous while loop got all the way through to the target row length    
-                        list_of_long_rows.append([[i,j],"v"])        
+                        list_of_long_rows.append([[i,j],"v",length_to_eliminate])        
             
             
             # find all the DIAGONAL TOP LEFT TO BOTTOM RIGHT target length rows
@@ -343,7 +370,7 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
                         else:
                             break                    # otherwise stop
                     if k == length_to_eliminate - 1:   # i.e. if the previous while loop got all the way through to the target row length    
-                        list_of_long_rows.append([[i,j],"dtlbr"])        
+                        list_of_long_rows.append([[i,j],"dtlbr",length_to_eliminate])        
             
             # find all the DIAGONAL BOTTOM LEFT TO TOP RIGHT target length rows
             for i in range(length_to_eliminate-1,n):
@@ -355,7 +382,7 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
                         else:
                             break                    # otherwise stop
                     if k == length_to_eliminate - 1:   # i.e. if the previous while loop got all the way through to the target row length    
-                        list_of_long_rows.append([[i,j],"dbltr"])        
+                        list_of_long_rows.append([[i,j],"dbltr",length_to_eliminate])        
             
             
             # now we go through and eliminate each of the 5-in-a-rows (or whatever length it is)
@@ -381,10 +408,20 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
             length_to_eliminate = length_to_eliminate - 1
             #end of while loop
         
+        for i in range(0,len(list_of_long_rows)):
+            SCORE = SCORE + list_of_long_rows[i][2]*100   # this runs through everything in the list of "long rows" (i.e. lines long enough to be eliminated) and adds up the length of each, multiplied by 100
+        
+        return len(list_of_long_rows)
         # end of eliminate long rows function
-        
-    eliminate_long_rows()    
-        
+    
+    NO_OF_ROWS_ELIMINATED = 0 # initialising this variable, which will track whether we eliminated a row
+    NO_OF_ROWS_ELIMINATED = eliminate_long_rows() # this calls the function, and sets the variable to the number of long rows eliminated. This will be used in the make_incoming_balls_real bit -- this shouldn't be called if one or more long rows have been eliminated
+    
+    
+    if NO_OF_ROWS_ELIMINATED == 0:
+        make_incoming_balls_arrive()
+        eliminate_long_rows()        # we call this again, just to catch the scenario where an incoming ball happens to fall in the end of a 4-in-a-row
+    
     print("This is a redundant extra print after eliminate_long_rows")
     print_nicely()
 
@@ -394,4 +431,7 @@ while NO_OF_EMPTY_SPACES_LEFT>0:       # essentially the whole game happens insi
             if GAMEBOARD[i][j] == 0:
                 NO_OF_EMPTY_SPACES_LEFT += 1
     
+    if NO_OF_EMPTY_SPACES_LEFT == 1:
+        print("GAME OVER!!! The gameboard has filled up and the game is over.")
 
+    NO_OF_TURNS +=1
