@@ -124,7 +124,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
         # it also includes various checks on the sensibleness of what the user has inputted
         """
         # TO DO: need to add in verification that someone hasn't entered numbers that are outside of the GAMEBOARD
-        # TO DO: need to add in verification that the co ordinates entered are for empty cell (for ball destination)
+        # TO DO: need to add in verification that the co ordinates entered are for empty cell (for ball destination) -- note that flood fill takes care of this, so this isn't that important
 
 
         #NOTE -- IMPORTANT ASSUMPTION I've assumed that n doesn't get any larger than 10 -- if n>10, the above code breaks, shouldn't be hard to fix it so that doesn't happen, because it's just the simple fact that I'm assuming it's one digit long
@@ -148,15 +148,210 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
         #end of while loop        
 
         BALL_DESTINATION = input("Give the x,y co-ordinates of the ball's destination, separated by a comma: ")
+        
 
 
         return [BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION]
 
     # end of ask for ball to move and destination function
 
+    def ball_to_move_and_destination_bot():
+        """
+        I created this function by taking a copy of ask_for_ball_to_move_and_destination
+        I then updated it to automatically generate the BALL_TO_MOVE_INPUT variable and the BALL_DESTINATION variable
+        At first it generates these at random
+        """
+        # TO DO: need to add in verification that someone hasn't entered numbers that are outside of the GAMEBOARD
+        # TO DO: need to add in verification that the co ordinates entered are for empty cell (for ball destination)
+
+
+        #NOTE -- IMPORTANT ASSUMPTION I've assumed that n doesn't get any larger than 10 -- if n>10, the above code breaks, shouldn't be hard to fix it so that doesn't happen, because it's just the simple fact that I'm assuming it's one digit long
+
+
+        x = randint(0,8)
+        y = randint(0,8)
+        BALL_TO_MOVE_INPUT = str(x)+","+str(y)
+        COLOUR_OF_BALL_BEING_MOVED = GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] # note the colour of the ball moved
+        while COLOUR_OF_BALL_BEING_MOVED.real == 0:                 # this while loop checks that the user has made sensible choices
+            x = randint(0,8)
+            y = randint(0,8)
+            BALL_TO_MOVE_INPUT = str(x)+","+str(y)
+            COLOUR_OF_BALL_BEING_MOVED = GAMEBOARD[int(BALL_TO_MOVE_INPUT[0])][int(BALL_TO_MOVE_INPUT[2])] # note the colour of the ball moved        
+        #end of while loop        
+
+        x = randint(0,8)
+        y = randint(0,8)
+        BALL_DESTINATION = str(x)+","+str(y)
+        colour_of_ball_destination = GAMEBOARD[int(BALL_DESTINATION[0])][int(BALL_DESTINATION[2])]  # I don't think this variable exists already, but we need to take note of this colour to check it is sensible. Looks like a local variable is fine for this, I don't think it will be needed outside of this function
+        while colour_of_ball_destination.real > 0:                 # this while loop checks that the ball is going to an empty (or imaginary) cell
+            x = randint(0,8)
+            y = randint(0,8)
+            BALL_DESTINATION = str(x)+","+str(y)
+            colour_of_ball_destination = GAMEBOARD[int(BALL_DESTINATION[0])][int(BALL_DESTINATION[2])]
+        #end of while loop
+            
+            
+        
+        print("ball to move input = "+BALL_TO_MOVE_INPUT)
+        print("colour of ball being moved = "+str(COLOUR_OF_BALL_BEING_MOVED))
+        print("ball destination = "+BALL_DESTINATION)
+        
+        return [BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION]
+
+    # end of function
+
     
+    
+    def identify_partial_long_rows():
+        """
+        Runs through all possible 5-in-a-row combinations (I say 5 -- could be any number)
+        Identifies all the instances of a 5-in-a-row which are partially complete (i.e. they have 2 out of the 5, or 3 out of the 5, etc)
+        
+        """
+    
+
+        # each "long row" (i.e. row of the target length, e.g. each 5-in-a-row) is stored...
+        # ... as a 3-tuple where the first element is the "first" position on the gameboard...
+        # ... and the second element is a text string indicating the direction, i.e. "h", "v", "dtlbr", "dbltr"...
+        # ... for horizontal, vertical, diagonal top left to bottom right, and diagonal bottom left to top right...
+        # ... and the third element indicates the length of the row (is it a 5-in-a-row, or a 6-in-a-row, whatever)
+        list_of_partial_long_rows = []
+        colour = 0
+        colour_counter = 0
+        partial_row_length = 0
+        temp_partial_row = []
+        global TARGET_ROW_LENGTH   # i.e. if the game is to create 5 in a rows, then this number will be 5
+        global NO_OF_COLOURS
+        
+        
+        if TARGET_ROW_LENGTH > n:
+            print("Error! The parameters have been set up wrong -- TARGET_ROW_LENGTH shouldn't be any larger than the size of the gameboard (n)")
+        
+                   
+                   
+##        # find all the HORIZONTAL partial target length rows
+##        for i in range(0,n):
+##            for j in range(0,n-TARGET_ROW_LENGTH+1):
+##                for colour in range(1,NO_OF_COLOURS+1):
+##                    for k in range(0,TARGET_ROW_LENGTH):
+##                        if GAMEBOARD[i][j+k] == colour:
+##                            temp_partial_row.append([[i,j+k]])
+##                            colour_counter += 1
+##                    for partial_row_length in range(2,TARGET_ROW_LENGTH+1):
+##                        if colour_counter == partial_row_length:
+##                            list_of_partial_long_rows.append([i,j,temp_partial_row,"h",colour_counter,colour])        
+##                    temp_partial_row=[]
+##                    colour_counter = 0
+                    
+    
+        # find all the HORIZONTAL partial target length rows
+        for i in range(0,n):
+            for j in range(0,n-TARGET_ROW_LENGTH+1):
+                for colour in range(1,NO_OF_COLOURS+1):
+                    # what the algorithm should do here is keep on looking until it finds "colour"
+                    # the moment it finds "colour", look out for the possibility that...
+                    # ...each cell from there until the next instance of "colour" consists only of zeros
+##                    k_values_with_colour = []
+                    for k in range(0,TARGET_ROW_LENGTH):
+                        if GAMEBOARD[i][j+k] == colour:
+                            temp_partial_row.append([[i,j+k]])
+##                            k_values_with_colour.append(k)
+                            colour_counter += 1
+                        
+                    this_is_a_partial_row = False                     # setting this to false here means that if the number of colours in the block of 5 is <or= 1, then the row won't get added to the list of partial long rows
+                    
+                    if colour_counter > 1:                            # if there's more than 1 of that colour within the block of 5 cells being considered
+                        this_is_a_partial_row = True                  # this variable is now going to be true unless we find an offending colour within the block of 5
+                        imaginary_counter = 0
+                        for k in range(0,TARGET_ROW_LENGTH):
+                            if GAMEBOARD[i][j+k].real > 0 and GAMEBOARD[i][j+k] != colour:        # if we hit something within the block of 5 cells is neither empty nor is the desired colour...
+                                this_is_a_partial_row = False                                     # ... then we don't count it as a partial row
+                            if GAMEBOARD[i][j+k].imag > 0 and GAMEBOARD[i][j+k].imag != colour:   # the point of this is that if there are two or more incoming balls of the wrong colour, then we are screwed and can't make a 5-in-a-row
+                                imaginary_counter +=1
+                            if imaginary_counter >1:
+                                this_is_a_partial_row = False
+                            
+                            
+                        if this_is_a_partial_row:
+                            list_of_partial_long_rows.append([i,j,temp_partial_row,"h",colour_counter,colour])        
+                    
+                    temp_partial_row=[]
+                    colour_counter = 0
+                    
+    
+    # I THINK THIS IS WORKING FOR HORIZONTAL, NOW TRY APPLYING THIS TO VERTICAL AND DIAG TOO
+    
+    
+    
+    
+    
+    
+        # find all the VERTICAL target length rows
+        for j in range(0,n):
+            for i in range(0,n-TARGET_ROW_LENGTH+1):
+                for colour in range(1,NO_OF_COLOURS+1):
+                    for k in range(0,TARGET_ROW_LENGTH):
+                        if GAMEBOARD[i+k][j] == colour:
+                            temp_partial_row.append([[i+k,j]])
+                            colour_counter += 1
+                    for partial_row_length in range(2,TARGET_ROW_LENGTH+1):
+                        if colour_counter == partial_row_length:
+                            list_of_partial_long_rows.append([i,j,temp_partial_row,"v",colour_counter,colour])        
+                    temp_partial_row=[]
+                    colour_counter = 0
+        
+        
+        
+        # find all the DIAGONAL TOP LEFT TO BOTTOM RIGHT target length rows
+        for i in range(0,n-TARGET_ROW_LENGTH+1):
+            for j in range(0,n-TARGET_ROW_LENGTH+1):
+                for colour in range(1,NO_OF_COLOURS+1):
+                    for k in range(0,TARGET_ROW_LENGTH):
+                        if GAMEBOARD[i+k][j+k] == colour:
+                            temp_partial_row.append([[i+k,j+k]])
+                            colour_counter += 1
+                    for partial_row_length in range(2,TARGET_ROW_LENGTH+1):
+                        if colour_counter == partial_row_length:
+                            list_of_partial_long_rows.append([i,j,temp_partial_row,"dtlbr",colour_counter,colour])        
+                    temp_partial_row=[]
+                    colour_counter = 0
+                
+                               
+        # find all the DIAGONAL BOTTOM LEFT TO TOP RIGHT target length rows
+        for i in range(TARGET_ROW_LENGTH-1,n):
+            for j in range(0,n-TARGET_ROW_LENGTH+1):
+                for colour in range(1,NO_OF_COLOURS+1):
+                    for k in range(0,TARGET_ROW_LENGTH):
+                        if GAMEBOARD[i-k][j+k] == colour:
+                            temp_partial_row.append([[i-k,j+k]])
+                            colour_counter += 1
+                    for partial_row_length in range(2,TARGET_ROW_LENGTH+1):
+                        if colour_counter == partial_row_length:
+                            list_of_partial_long_rows.append([i,j,temp_partial_row,"dtlbr",colour_counter,colour])        
+                    temp_partial_row=[]
+                    colour_counter = 0
+        
+        
+        
+        
+        print("List of partial long rows using format [i,j,temp_partial_row,direction,colour_counter,colour]...") # this is just here for debugging purposes
+        print(list_of_partial_long_rows)              # this is just here for debugging purposes
+        
+        
+        return list_of_partial_long_rows   
+        
+        # end of identify partial long rows function
+    
+    
+    
+
+    identify_partial_long_rows()       # just calling this function now for testing purposes -- it probalby wants to be called within the bot function once it's properly tested
+    
+    # note that in the below, we can flick between whether it's the user or the bot which plays. We do this by commenting out the appropriate line
     TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
-    TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    #TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    TEMP = ball_to_move_and_destination_bot() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    
     
     BALL_TO_MOVE_INPUT = TEMP[0]
     COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
@@ -339,7 +534,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             for i in range(0,n):
                 for j in range(0,n-length_to_eliminate+1):
                     k = 0
-                    while k < length_to_eliminate-1:     # should thsi say -1 at the end?
+                    while k < length_to_eliminate-1:     
                         if GAMEBOARD[i][j+k] == GAMEBOARD[i][j+k+1] and GAMEBOARD[i][j+k] != 0:     # if the current position and then next one along have the same colour ball inside (and if it's not empty -- note that it's only necessary to check that it's non-zero the first time, but the code checks every time anyway)
                             k +=1                    # then move along and check the next one
                         else:
@@ -351,7 +546,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             for j in range(0,n):
                 for i in range(0,n-length_to_eliminate+1):
                     k = 0
-                    while k < length_to_eliminate-1:     # should thsi say -1 at the end?
+                    while k < length_to_eliminate-1:     
                         if GAMEBOARD[i+k][j] == GAMEBOARD[i+k+1][j] and GAMEBOARD[i+k][j] != 0:     # if the current position and then next one along have the same colour ball inside (and if it's not empty -- note that it's only necessary to check that it's non-zero the first time, but the code checks every time anyway)
                             k +=1                    # then move along and check the next one
                         else:
@@ -364,7 +559,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             for i in range(0,n-length_to_eliminate+1):
                 for j in range(0,n-length_to_eliminate+1):
                     k = 0
-                    while k < length_to_eliminate-1:     # should thsi say -1 at the end?
+                    while k < length_to_eliminate-1:     
                         if GAMEBOARD[i+k][j+k] == GAMEBOARD[i+k+1][j+k+1] and GAMEBOARD[i+k][j+k] != 0:     # if the current position and then next one along have the same colour ball inside (and if it's not empty -- note that it's only necessary to check that it's non-zero the first time, but the code checks every time anyway)
                             k +=1                    # then move along and check the next one
                         else:
@@ -376,7 +571,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             for i in range(length_to_eliminate-1,n):
                 for j in range(0,n-length_to_eliminate+1):
                     k = 0
-                    while k < length_to_eliminate-1:     # should thsi say -1 at the end?
+                    while k < length_to_eliminate-1:     
                         if GAMEBOARD[i-k][j+k] == GAMEBOARD[i-k-1][j+k+1] and GAMEBOARD[i-k][j+k] != 0:     # if the current position and then next one along have the same colour ball inside (and if it's not empty -- note that it's only necessary to check that it's non-zero the first time, but the code checks every time anyway)
                             k +=1                    # then move along and check the next one
                         else:
@@ -413,6 +608,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
         
         return len(list_of_long_rows)
         # end of eliminate long rows function
+    
     
     NO_OF_ROWS_ELIMINATED = 0 # initialising this variable, which will track whether we eliminated a row
     NO_OF_ROWS_ELIMINATED = eliminate_long_rows() # this calls the function, and sets the variable to the number of long rows eliminated. This will be used in the make_incoming_balls_real bit -- this shouldn't be called if one or more long rows have been eliminated
