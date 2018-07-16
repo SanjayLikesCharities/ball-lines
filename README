@@ -1,0 +1,16 @@
+This code recreates the game ball lines
+This game can be found, e.g., here: http://www.sheppardsoftware.com/braingames/balllines/balllinesAS2.htm
+
+I largely created this game in order to learn to code in Python
+
+I chose it because I thought it would be interesting to create some machine learning to learn to play the game.
+(at time of writing I have not yet succeeded in created said machine learning)
+
+A few minor oddities:
+
+Note that if n (the size of the GAMEBOARD) is >=10, then parts of the game might break. (fix this by finding instances of "int(BALL_TO_MOVE_INPUT[0])" and "int(BALL_TO_MOVE_INPUT[2])" adjust appropriately)
+(another minor oddity: in the scenario where an incoming ball is going to arrive in the spot which would complete a 5-in-a-row...
+... but the incoming ball is of a different colour from the others in the 5-in-a-row....
+... and then the user completes the 5-in-a-row by moving a ball...
+... then the eliminate_long_rows function will also delete out the incoming ball...
+... whereas the original version on the website will leave the incoming ball there.)
