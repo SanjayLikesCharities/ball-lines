@@ -25,6 +25,9 @@ NO_OF_COLOURS = 4
 NO_OF_INCOMING_BALLS = 5
 TARGET_ROW_LENGTH = 5
 SCORE = 0
+TARGET_SCORE = 1000
+
+
 
 def initialise_gameboard():
     """
@@ -55,6 +58,13 @@ for i in range(0,n):
     for j in range(0,n):
         if GAMEBOARD[i][j] == 0:
             NO_OF_EMPTY_SPACES_LEFT += 1
+
+
+print("WELCOME TO SANJAY'S VERSION OF BALL LINES")
+GAME_METHOD = input("If you (the user) would like to play, type 'user'; if you would like the bot to play, type 'bot': ")
+if GAME_METHOD != "user" and GAME_METHOD != "bot":
+    print("sorry, I didn't recognise your response, please try again")
+    GAME_METHOD = input("If you (the user) would like to play, type 'user'; if you would like the bot to play, type 'bot': ")
 
 
 
@@ -377,7 +387,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
         (4) should also consider what happens if the route is blocked (haven't done this)
         """
         
-        BALL_TO_MOVE_INPUT = "0,0"    # Tthere were error messages complaining that this hadn't been assigned, so it's assigned now
+        BALL_TO_MOVE_INPUT = "0,0"    # There were error messages complaining that this hadn't been assigned, so it's assigned now
         COLOUR_OF_BALL_BEING_MOVED = 0
         BALL_DESTINATION = "0,0"
         
@@ -408,25 +418,25 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             # for HORIZONTAL: this bit of code runs through each of the cells in the selected 5-in-a-row and if it's empty it put it into a shortlist from which one will be randomly selected
             if partial_row_direction == "h":
                 for k in range(0,TARGET_ROW_LENGTH):
-                    if GAMEBOARD[row_start_i][row_start_j+k] == 0:
+                    if GAMEBOARD[row_start_i][row_start_j+k].real == 0:
                         temp_possible_destinations.append([row_start_i,row_start_j+k])
             
             # for VERTICAL: this bit of code runs through each of the cells in the selected 5-in-a-row and if it's empty it put it into a shortlist from which one will be randomly selected
             if partial_row_direction == "v":
                 for k in range(0,TARGET_ROW_LENGTH):
-                    if GAMEBOARD[row_start_i+k][row_start_j] == 0:
+                    if GAMEBOARD[row_start_i+k][row_start_j].real == 0:
                         temp_possible_destinations.append([row_start_i+k,row_start_j])
             
             # for DIAGONAL TLBR: this bit of code runs through each of the cells in the selected 5-in-a-row and if it's empty it put it into a shortlist from which one will be randomly selected
             if partial_row_direction == "dtlbr":     # diagonal top left to bottom right
                 for k in range(0,TARGET_ROW_LENGTH):
-                    if GAMEBOARD[row_start_i+k][row_start_j+k] == 0:
+                    if GAMEBOARD[row_start_i+k][row_start_j+k].real == 0:
                         temp_possible_destinations.append([row_start_i+k,row_start_j+k])
             
             # for DIAGONAL BLTR: this bit of code runs through each of the cells in the selected 5-in-a-row and if it's empty it put it into a shortlist from which one will be randomly selected
             if partial_row_direction == "dbltr":     # diagonal bottom left to top right
                 for k in range(0,TARGET_ROW_LENGTH):
-                    if GAMEBOARD[row_start_i-k][row_start_j+k] == 0:
+                    if GAMEBOARD[row_start_i-k][row_start_j+k].real == 0:
                         temp_possible_destinations.append([row_start_i-k,row_start_j+k])
             
             
@@ -436,7 +446,10 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
             y = temp_possible_destinations[position_in_long_row][1]
             BALL_DESTINATION = str(x)+","+str(y)
             
-        
+        if list_of_partial_long_rows == []:
+            print("there are no partial long rows, so this is the random bot")
+        else:
+            print("partial long row targeted start at "+str(row_start_i)+","+str(row_start_j)+" and has direction "+str(partial_row_direction))
         print("ball to move input from bot = "+BALL_TO_MOVE_INPUT)
         print("colour of ball being moved from bot = "+str(COLOUR_OF_BALL_BEING_MOVED))
         print("ball destination from bot = "+BALL_DESTINATION)
@@ -447,11 +460,15 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
 
     
     
-    # note that in the below, we can flick between whether it's the user or the bot which plays. We do this by commenting out the appropriate line
-    TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
-    #TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
-    TEMP = ball_to_move_and_destination_bot() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
     
+    TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
+    
+    if GAME_METHOD == "user":
+        TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    elif GAME_METHOD == "bot":
+        TEMP = ball_to_move_and_destination_bot() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+    else:
+        print("error: something's gone wrong, the GAME_METHOD variable doesn't seem to be right")
     
     BALL_TO_MOVE_INPUT = TEMP[0]
     COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
@@ -522,14 +539,19 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
 
     while CAN_MOVE == False:
         print("Sorry!!! There is no path between the ball you want to move and that destination")
-        BALL_DESTINATION = input("Give the x,y co-ordinates of the ball's destination, separated by a comma (or type 'new ball' if you want to choose a different ball to move): ")
-        if BALL_DESTINATION.lower() == "new ball":
-            TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.
+        
+        TEMP = [0,0,0]  # initialising this variable, which is here to capture the outputs of the ask_for_ball_to_move_and_dest function (notes: I first tried to treat those outputs (BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION) as global variables and use them outside fo the function, but that didn't work -- the code seemed to simply treat those variables as local, and so outside of the function they were back to being the empty string.    
+        if GAME_METHOD == "user":
             TEMP = ask_for_ball_to_move_and_destination() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
-    
-            BALL_TO_MOVE_INPUT = TEMP[0]
-            COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
-            BALL_DESTINATION = TEMP[2]
+        elif GAME_METHOD == "bot":
+            TEMP = ball_to_move_and_destination_bot() # this calls the function and stores BALL_TO_MOVE_INPUT,COLOUR_OF_BALL_BEING_MOVED,BALL_DESTINATION into the TEMP variable
+        else:
+            print("error: something's gone wrong, the GAME_METHOD variable doesn't seem to be right")
+        
+        BALL_TO_MOVE_INPUT = TEMP[0]
+        COLOUR_OF_BALL_BEING_MOVED = TEMP[1]
+        BALL_DESTINATION = TEMP[2]
+        
         CAN_MOVE = flood_fill(int(BALL_TO_MOVE_INPUT[0]),int(BALL_TO_MOVE_INPUT[2]), int(BALL_DESTINATION[0]), int(BALL_DESTINATION[2]))
 
 
@@ -721,6 +743,11 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
     print("This is a redundant extra print after eliminate_long_rows")
     print_nicely()
 
+    if SCORE >= TARGET_SCORE:
+        break
+    
+    
+    
     NO_OF_EMPTY_SPACES_LEFT = 0
     for i in range(0,n):
         for j in range(0,n):
@@ -731,3 +758,7 @@ while NO_OF_EMPTY_SPACES_LEFT>1:       # essentially the whole game happens insi
         print("GAME OVER!!! The gameboard has filled up and the game is over.")
 
     NO_OF_TURNS +=1
+
+if SCORE >= TARGET_SCORE:
+    print("Congratulations, you've won!")
+
