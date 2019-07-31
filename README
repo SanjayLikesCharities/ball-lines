@@ -3,8 +3,7 @@ This game can be found, e.g., here: http://www.sheppardsoftware.com/braingames/b
 
 I largely created this game in order to learn to code in Python
 
-I chose it because I thought it would be interesting to create some machine learning to learn to play the game.
-(at time of writing I have not yet succeeded in created said machine learning)
+I chose it because I thought it would be interesting to create some machine learning to learn to play the game and as far as I knew at the time, nobody has created machine learning for this game
 
 A few minor oddities:
 
@@ -14,3 +13,4 @@ Note that if n (the size of the GAMEBOARD) is >=10, then parts of the game might
 ... and then the user completes the 5-in-a-row by moving a ball...
 ... then the eliminate_long_rows function will also delete out the incoming ball...
 ... whereas the original version on the website will leave the incoming ball there.)
+The user interface / front end for this is very "ASCII art" -- I haven't tried very hard to make it pretty
